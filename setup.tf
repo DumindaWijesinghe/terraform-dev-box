@@ -12,7 +12,6 @@ provider "aws" {
 }
 
 # # 1. Create vpc
-
 resource "aws_vpc" "dev-vpc" {
   cidr_block = "10.0.0.0/16"
   tags = {
@@ -29,7 +28,6 @@ resource "aws_internet_gateway" "gw" {
 }
 
 # # 3. Create Custom Route Table
-
 resource "aws_route_table" "dev-route-table" {
   vpc_id = aws_vpc.dev-vpc.id
 
@@ -49,7 +47,6 @@ resource "aws_route_table" "dev-route-table" {
 }
 
 # # 4. Create a Subnet 
-
 resource "aws_subnet" "subnet-1" {
   vpc_id            = aws_vpc.dev-vpc.id
   cidr_block        = "10.0.1.0/24"
@@ -65,6 +62,7 @@ resource "aws_route_table_association" "a" {
   subnet_id      = aws_subnet.subnet-1.id
   route_table_id = aws_route_table.dev-route-table.id
 }
+
 # # 6. Create Security Group to allow port 22,80,443
 resource "aws_security_group" "allow_web" {
   name        = "allow_web_traffic"
@@ -113,15 +111,14 @@ resource "aws_security_group" "allow_web" {
 }
 
 # # 7. Create a network interface with an ip in the subnet that was created in step 4
-
 resource "aws_network_interface" "web-server-nic" {
   subnet_id       = aws_subnet.subnet-1.id
   private_ips     = ["10.0.1.50"]
   security_groups = [aws_security_group.allow_web.id]
 
 }
-# # 8. Assign an elastic IP to the network interface created in step 7
 
+# # 8. Assign an elastic IP to the network interface created in step 7
 resource "aws_eip" "one" {
   vpc                       = true
   network_interface         = aws_network_interface.web-server-nic.id
@@ -133,10 +130,9 @@ output "server_public_ip" {
   value = aws_eip.one.public_ip
 }
 
-# # 9. Create Ubuntu server and install/enable apache2
-
+# # 9. Create Ubuntu server
 resource "aws_instance" "web-server-instance" {
-  ami               = "ami-09c5258a58aeabe14"
+  ami               = "ami-09c5258a58aeabe14" # Ubuntu 18.04
   instance_type     = "t2.micro"
   availability_zone = "us-east-1a"
   key_name          = "main-key"
